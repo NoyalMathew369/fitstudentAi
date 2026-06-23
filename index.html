@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitStudent AI - Personalized Workout & Diet Planner</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=1.3">
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="dark-mode">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="logo.png" alt="FitStudent AI Logo" class="app-logo">
+                <div class="brand-info">
+                    <span class="brand-name">FitStudent <span class="accent-text">AI</span></span>
+                    <span class="brand-tagline">Student Fitness Engine</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard" id="nav-dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="planner" id="nav-planner">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    <span>AI Planner</span>
+                </button>
+                <button class="nav-item" data-tab="workout" id="nav-workout">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18.5 5.5 3 3-2.5 2.5-3-3Z"/><path d="m8 16 3 3-2.5 2.5-3-3Z"/></svg>
+                    <span>Workout Routine</span>
+                </button>
+                <button class="nav-item" data-tab="meals" id="nav-meals">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Meal Plan</span>
+                </button>
+                <button class="nav-item" data-tab="groceries" id="nav-groceries">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                    <span>Grocery List</span>
+                </button>
+                <button class="nav-item" data-tab="settings" id="nav-settings">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Settings</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-badge" style="position:relative; display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex:1;">
+                        <div class="user-avatar">S</div>
+                        <div class="user-details">
+                            <span class="user-name" id="user-display-name">Student Athlete</span>
+                            <span class="user-status" id="user-display-status">Active Student</span>
+                        </div>
+                    </div>
+                    <button class="btn-logout-sidebar" id="btn-logout-sidebar" title="Log Out" onclick="signOutUser()" style="display:none; background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0.2rem; align-items:center;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px; display:block;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Offline / Local Sync Banner -->
+            <div class="sync-banner" id="sync-warning-banner" style="display: none; background: rgba(239, 68, 68, 0.15); border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding: 0.65rem 2rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; font-weight: 500; color: #f87171;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px; height:16px; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Local Demo Mode: Storing data in browser cache. Paste Firebase configuration in settings to sync cloud database.</span>
+            </div>
+            <!-- Header -->
+            <header class="content-header">
+                <div class="header-welcome">
+                    <h1 id="header-title">Hello, Student Athlete!</h1>
+                    <p id="header-subtitle" class="text-secondary">Ready to smash your goals today?</p>
+                </div>
+                <div class="header-actions">
+                    <span class="date-badge" id="current-date">June 22, 2026</span>
+                    <button class="btn btn-secondary btn-icon-only" id="theme-toggle" title="Toggle Dark/Light Mode">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Panels -->
+            <div class="panel-container">
+                
+                <!-- Panel 1: Dashboard -->
+                <section class="content-panel active" id="panel-dashboard">
+                    <!-- CTA State (Visible when no plan is generated) -->
+                    <div class="empty-state-card" id="dashboard-empty-state">
+                        <div class="empty-icon-wrapper">
+                            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 4"/></svg>
+                        </div>
+                        <h2>No Fitness Plan Generated Yet</h2>
+                        <p>Welcome to FitStudent AI! We customize workout routines and diet plans considering your specific cultural meals, student budget, and available equipment. Click below to generate your custom AI plan.</p>
+                        <button class="btn btn-primary" onclick="switchToTab('planner')">
+                            Create Your AI Plan
+                            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Dashboard Content (Hidden by default, shown when plan is active) -->
+                    <div class="dashboard-grid" id="dashboard-content" style="display: none;">
+                        <!-- Trackers Row -->
+                        <div class="grid-card stats-overview">
+                            <h3>Daily Tracking</h3>
+                            <div class="trackers-flex">
+                                <!-- Calorie Progress Ring -->
+                                <div class="tracker-item">
+                                    <div class="progress-ring-container">
+                                        <svg class="progress-ring" width="120" height="120">
+                                            <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                                            <circle id="calorie-progress-ring" class="progress-ring-circle" stroke="var(--primary-color)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314.15" stroke-dashoffset="314.15"/>
+                                        </svg>
+                                        <div class="ring-label">
+                                            <span class="ring-value" id="dash-cal-consumed">0</span>
+                                            <span class="ring-max">/ <span id="dash-cal-target">2,200</span> cal</span>
+                                        </div>
+                                    </div>
+                                    <span class="tracker-name">Calories</span>
+                                    <div class="tracker-quick-actions">
+                                        <button class="btn btn-tiny" onclick="adjustStat('calories', -100)">-100</button>
+                                        <button class="btn btn-tiny" onclick="adjustStat('calories', 250)">+250</button>
+                                    </div>
+                                </div>
+
+                                <!-- Protein Tracker -->
+                                <div class="tracker-item">
+                                    <div class="progress-ring-container">
+                                        <svg class="progress-ring" width="120" height="120">
+                                            <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                                            <circle id="protein-progress-ring" class="progress-ring-circle" stroke="var(--accent-color)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314.15" stroke-dashoffset="314.15"/>
+                                        </svg>
+                                        <div class="ring-label">
+                                            <span class="ring-value" id="dash-protein-consumed">0</span>
+                                            <span class="ring-max">/ <span id="dash-protein-target">120</span>g</span>
+                                        </div>
+                                    </div>
+                                    <span class="tracker-name">Protein</span>
+                                    <div class="tracker-quick-actions">
+                                        <button class="btn btn-tiny" onclick="adjustStat('protein', -10)">-10g</button>
+                                        <button class="btn btn-tiny" onclick="adjustStat('protein', 25)">+25g</button>
+                                    </div>
+                                </div>
+
+                                <!-- Water Progress Ring -->
+                                <div class="tracker-item">
+                                    <div class="progress-ring-container">
+                                        <svg class="progress-ring" width="120" height="120">
+                                            <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                                            <circle id="water-progress-ring" class="progress-ring-circle" stroke="#00d2ff" stroke-width="8" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314.15" stroke-dashoffset="314.15"/>
+                                        </svg>
+                                        <div class="ring-label">
+                                            <span class="ring-value" id="dash-water-consumed">0</span>
+                                            <span class="ring-max">/ <span id="dash-water-target">3.0</span>L</span>
+                                        </div>
+                                    </div>
+                                    <span class="tracker-name">Water Intake</span>
+                                    <div class="tracker-quick-actions">
+                                        <button class="btn btn-tiny" onclick="adjustStat('water', -0.25)">-250ml</button>
+                                        <button class="btn btn-tiny" onclick="adjustStat('water', 0.25)">+250ml</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mid Column - Left: Workout Preview -->
+                        <div class="grid-card dashboard-workout-preview">
+                            <div class="card-header-flex">
+                                <h3>Today's Workout</h3>
+                                <button class="btn btn-link" onclick="switchToTab('workout')">Full Routine</button>
+                            </div>
+                            <div id="dash-workout-placeholder" class="preview-content">
+                                <!-- Loaded dynamically via app.js -->
+                            </div>
+                        </div>
+
+                        <!-- Mid Column - Right: Diet Preview -->
+                        <div class="grid-card dashboard-diet-preview">
+                            <div class="card-header-flex">
+                                <h3>Today's Meal Schedule</h3>
+                                <button class="btn btn-link" onclick="switchToTab('meals')">Full Meal Plan</button>
+                            </div>
+                            <div id="dash-diet-placeholder" class="preview-content">
+                                <!-- Loaded dynamically via app.js -->
+                            </div>
+                        </div>
+
+                        <!-- Budget Summary & Smart Swaps -->
+                        <div class="grid-card budget-savings-card full-width-card">
+                            <div class="budget-flex">
+                                <div class="budget-stat-item">
+                                    <span class="budget-label">Daily Diet Cost</span>
+                                    <span class="budget-value" id="dash-budget-cost">$4.20</span>
+                                    <span class="budget-sub" id="dash-budget-level">Ultra Budget Level</span>
+                                </div>
+                                <div class="budget-text-details">
+                                    <h4>Smart Swap Tip for Students</h4>
+                                    <p id="dash-smart-swap">Eggs are the cheapest source of high-quality protein! Swap out expensive powders or salmon for boiled eggs and peanut butter to keep your student budget aligned.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panel 2: AI Planner -->
+                <section class="content-panel" id="panel-planner">
+                    <div class="planner-wrapper">
+                        <div class="planner-info">
+                            <h2>AI Fitness Engine Preferences</h2>
+                            <p class="text-secondary">Input your dietary habits, local resources, and physical metrics. Our system adapts recipes to matching grocery costs and constructs target schedules specifically optimized for students.</p>
+                        </div>
+                        <form id="ai-planner-form" class="planner-form" onsubmit="generateAIPlan(event)">
+                            <div class="form-grid">
+                                <!-- Section 1: Basic Information -->
+                                <div class="form-card">
+                                    <div class="form-card-title">
+                                        <svg class="form-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <h3>About You</h3>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="student-name">Name</label>
+                                        <input type="text" id="student-name" placeholder="E.g., Alex" required value="Student Athlete">
+                                    </div>
+                                    <div class="form-row-2">
+                                        <div class="input-group">
+                                            <label for="student-age">Age</label>
+                                            <input type="number" id="student-age" placeholder="20" min="16" max="60" required value="20">
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="student-gender">Gender</label>
+                                            <select id="student-gender" required>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Non-binary">Non-binary</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row-2">
+                                        <div class="input-group">
+                                            <label for="student-weight">Weight (kg)</label>
+                                            <input type="number" id="student-weight" placeholder="70" min="40" max="180" required value="70">
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="student-height">Height (cm)</label>
+                                            <input type="number" id="student-height" placeholder="175" min="130" max="220" required value="175">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 2: Fitness Goals & Equipment -->
+                                <div class="form-card">
+                                    <div class="form-card-title">
+                                        <svg class="form-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                        <h3>Training Plan</h3>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="fitness-goal">Primary Fitness Goal</label>
+                                        <select id="fitness-goal" required>
+                                            <option value="Lose Weight (Cut)">Lose Weight (Cut)</option>
+                                            <option value="Build Muscle (Bulk)">Build Muscle (Bulk)</option>
+                                            <option value="Get Fit (Recomposition)">Get Fit (Recomposition)</option>
+                                            <option value="Increase Endurance">Increase Endurance</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="workout-equipment">Available Gym Equipment</label>
+                                        <select id="workout-equipment" required>
+                                            <option value="Bodyweight Only (Dorm Friendly)">Bodyweight Only (Dorm Friendly)</option>
+                                            <option value="Resistance Bands">Resistance Bands</option>
+                                            <option value="Dumbbells Only">Dumbbells Only</option>
+                                            <option value="Full Gym / Campus Gym Access">Full Gym / Campus Gym Access</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-row-2">
+                                        <div class="input-group">
+                                            <label for="workout-frequency">Frequency (per week)</label>
+                                            <select id="workout-frequency" required>
+                                                <option value="3 Days">3 Days</option>
+                                                <option value="4 Days">4 Days</option>
+                                                <option value="5 Days">5 Days</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="workout-duration">Workout Duration</label>
+                                            <select id="workout-duration" required>
+                                                <option value="20 Minutes">20 Minutes</option>
+                                                <option value="30 Minutes">30 Minutes</option>
+                                                <option value="45 Minutes">45 Minutes</option>
+                                                <option value="60 Minutes">60 Minutes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 3: Cultural Diet & Budget -->
+                                <div class="form-card">
+                                    <div class="form-card-title">
+                                        <svg class="form-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                        <h3>Nutrition & Budget</h3>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="diet-habit">Cultural Diet / Food Preference</label>
+                                        <select id="diet-habit" required>
+                                            <option value="Standard Western">Standard Western (All foods)</option>
+                                            <option value="Indian Vegetarian">Indian Vegetarian (No meat/fish, dairy OK)</option>
+                                            <option value="Halal">Halal (Certified meat/poulty, no alcohol/pork)</option>
+                                            <option value="Vegan">Vegan (Plant-based only)</option>
+                                            <option value="East Asian">East Asian (Rice, noodle, soy, fish/poultry base)</option>
+                                            <option value="Mediterranean">Mediterranean (Healthy fats, fish, legumes)</option>
+                                            <option value="Gluten-Free / Dairy-Free">Gluten-Free / Dairy-Free</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="budget-level">Daily Meal Budget</label>
+                                        <div class="range-slider-wrapper">
+                                            <input type="range" id="budget-level" min="1" max="3" step="1" value="1">
+                                            <div class="slider-ticks">
+                                                <span class="tick active" data-val="1">Ultra-Budget<br>($3-5/day)</span>
+                                                <span class="tick" data-val="2">Moderate<br>($8-12/day)</span>
+                                                <span class="tick" data-val="3">Premium Protein<br>($15+/day)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-large" id="submit-btn">
+                                    <span id="btn-text">Generate AI Custom Plan</span>
+                                    <svg id="btn-spinner" class="spinner" viewBox="0 0 24 24" style="display:none;"><circle class="path" cx="12" cy="12" r="10" fill="none" stroke-width="3"></circle></svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Panel 3: Workout Routine -->
+                <section class="content-panel" id="panel-workout">
+                    <div id="workout-empty-state" class="empty-state-card">
+                        <div class="empty-icon-wrapper">
+                            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6.5 6.5 11 11"/><path d="m18.5 5.5 3 3-2.5 2.5-3-3Z"/></svg>
+                        </div>
+                        <h2>No Workout Routine Loaded</h2>
+                        <p>Generate a customized workout schedule to see your exercises, set parameters, and use the rest timer.</p>
+                        <button class="btn btn-primary" onclick="switchToTab('planner')">Go to Planner</button>
+                    </div>
+
+                    <div id="workout-content" class="routine-layout" style="display: none;">
+                        <div class="routine-sidebar">
+                            <div class="routine-title-header">
+                                <h2 id="workout-routine-name">Custom Routine</h2>
+                                <span class="badge" id="workout-equipment-tag">Bodyweight Only</span>
+                            </div>
+                            <div class="day-selector-list" id="workout-days-list">
+                                <!-- Days populated dynamically -->
+                            </div>
+                            
+                            <!-- Timer Card -->
+                            <div class="timer-card">
+                                <div class="timer-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                    <span>Rest Timer</span>
+                                </div>
+                                <div class="timer-display" id="timer-display">00:45</div>
+                                <div class="timer-presets">
+                                    <button class="btn btn-tiny" onclick="setTimerPreset(30)">30s</button>
+                                    <button class="btn btn-tiny active" onclick="setTimerPreset(45)">45s</button>
+                                    <button class="btn btn-tiny" onclick="setTimerPreset(60)">60s</button>
+                                    <button class="btn btn-tiny" onclick="setTimerPreset(90)">90s</button>
+                                </div>
+                                <div class="timer-controls">
+                                    <button class="btn btn-secondary btn-small" id="timer-start" onclick="toggleTimer()">Start</button>
+                                    <button class="btn btn-outline btn-small" id="timer-reset" onclick="resetTimer()">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="exercises-main-pane">
+                            <div class="pane-header">
+                                <h3 id="workout-selected-day-title">Day 1: Full Body Work</h3>
+                                <p id="workout-selected-day-desc" class="text-secondary">Perform each exercise in sequence with rest between sets.</p>
+                            </div>
+                            <div class="exercise-cards-grid" id="exercise-cards-container">
+                                <!-- Loaded dynamically via app.js -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panel 4: Meal Plan -->
+                <section class="content-panel" id="panel-meals">
+                    <div id="meals-empty-state" class="empty-state-card">
+                        <div class="empty-icon-wrapper">
+                            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h2>No Meal Plan Loaded</h2>
+                        <p>Generate a meal plan adapted to your budget, cultural preferences, and macro needs.</p>
+                        <button class="btn btn-primary" onclick="switchToTab('planner')">Go to Planner</button>
+                    </div>
+
+                    <div id="meals-content" class="meals-layout" style="display: none;">
+                        <div class="meals-summary-bar">
+                            <div class="summary-stat">
+                                <span class="label">Macro Target</span>
+                                <span class="value" id="meal-summary-macros">2,200 Cal | 120g P</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="label">Dietary Archetype</span>
+                                <span class="value" id="meal-summary-type">Indian Vegetarian</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="label">Est. Cost Per Day</span>
+                                <span class="value" id="meal-summary-cost">$4.20</span>
+                            </div>
+                        </div>
+
+                        <div class="meal-days-tabs" id="meal-days-tab-container">
+                            <button class="meal-day-tab active" data-day="1">Day 1</button>
+                            <button class="meal-day-tab" data-day="2">Day 2</button>
+                            <button class="meal-day-tab" data-day="3">Day 3</button>
+                        </div>
+
+                        <div class="meal-cards-container" id="meals-list-container">
+                            <!-- Loaded dynamically via app.js -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panel 5: Grocery List -->
+                <section class="content-panel" id="panel-groceries">
+                    <div id="groceries-empty-state" class="empty-state-card">
+                        <div class="empty-icon-wrapper">
+                            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg>
+                        </div>
+                        <h2>No Grocery List Available</h2>
+                        <p>Generate your AI fitness program first, and we will build a consolidated weekly shopping list matching your budget.</p>
+                        <button class="btn btn-primary" onclick="switchToTab('planner')">Go to Planner</button>
+                    </div>
+
+                    <div id="groceries-content" class="groceries-layout" style="display: none;">
+                        <div class="grocery-header">
+                            <div>
+                                <h2>Weekly Student Shopping List</h2>
+                                <p class="text-secondary">Items grouped by section. Check items off as you shop in store.</p>
+                            </div>
+                            <div class="grocery-totals-box">
+                                <span class="total-label">Estimated Total Price:</span>
+                                <span class="total-value" id="grocery-total-price">$28.40</span>
+                            </div>
+                        </div>
+
+                        <div class="grocery-grid">
+                            <div class="grocery-sections-pane" id="grocery-sections-container">
+                                <!-- Loaded dynamically via app.js -->
+                            </div>
+                            
+                            <div class="grocery-tips-pane">
+                                <div class="tips-card grocery-savings-card">
+                                    <h3>Student Cost Savers</h3>
+                                    <ul class="savings-tips-list" id="grocery-savings-tips">
+                                        <!-- Populated dynamically based on budget tier -->
+                                    </ul>
+                                </div>
+                                <div class="tips-card store-guide-card">
+                                    <h3>Grocery Store Optimization</h3>
+                                    <p>To stay on budget, buy staple pantry items (like rice, lentils, oats, and peanut butter) in bulk. Frozen vegetables and fruits have the exact same nutritional value as fresh but are up to 50% cheaper and last much longer, avoiding waste!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panel 6: Settings -->
+                <section class="content-panel" id="panel-settings">
+                    <div class="settings-wrapper">
+                        <h2>Application Configuration</h2>
+                        
+                        <div class="settings-section form-card">
+                            <h3>AI Engine Source</h3>
+                            <p class="text-secondary">By default, FitStudent AI runs using our high-performance client-side generation database. You can optionally connect directly to Google's Gemini models for real-time generative responses.</p>
+                            
+                            <div class="input-group">
+                                <label for="api-key-input">Gemini API Key</label>
+                                <input type="password" id="api-key-input" placeholder="AIzaSy...">
+                                <span class="input-help">Stored locally in your browser. Leaving this blank uses local smart templates.</span>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="gemini-model-select">Gemini Model Choice</label>
+                                <select id="gemini-model-select">
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended - Fast & Resource Efficient)</option>
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Analytical & Detailed)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-section form-card">
+                            <h3>Appearance & Preferences</h3>
+                            <div class="form-row-2">
+                                <div class="input-group">
+                                    <label for="accent-color-select">Dashboard Accent Color</label>
+                                    <select id="accent-color-select" onchange="updateAccentColor(this.value)">
+                                        <option value="electric-blue">Electric Blue</option>
+                                        <option value="neon-emerald">Neon Emerald</option>
+                                        <option value="glowing-purple">Glowing Purple</option>
+                                        <option value="sunset-orange">Sunset Orange</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="measurement-unit">Measurement System</label>
+                                    <select id="measurement-unit">
+                                        <option value="metric">Metric (kg, cm, Liters)</option>
+                                        <option value="imperial">Imperial (lbs, inches, Gallons)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section form-card">
+                            <h3>Cloud Database Configuration</h3>
+                            <p class="text-secondary">Provide your personal Firebase web configuration parameters below to enable secure user logging and data sync. Leave blank to run in offline local storage mode.</p>
+                            <div class="input-group">
+                                <label for="firebase-config-settings">Firebase Web Config JSON</label>
+                                <textarea id="firebase-config-settings" rows="5" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "...",&#10;  "projectId": "...",&#10;  "storageBucket": "...",&#10;  "appId": "..."&#10;}' style="font-family:monospace; font-size:0.85rem; line-height:1.4;"></textarea>
+                            </div>
+                            <div class="settings-actions" style="display:flex; gap:1rem; margin-top:0.5rem;">
+                                <button class="btn btn-primary btn-small" onclick="saveSettingsFirebaseConfig()">Update Cloud Config</button>
+                                <button class="btn btn-secondary btn-small" id="btn-logout-settings" onclick="signOutUser()" style="display:none;">Log Out Account</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-section form-card danger-zone">
+                            <h3>Reset Application State</h3>
+                            <p class="text-secondary">This clears all locally stored workout schedules, diet plans, daily trackers, and custom configuration settings.</p>
+                            <button class="btn btn-danger" onclick="resetAppData()">Clear All Local Data</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Recipe Instruction Modal -->
+    <div class="modal-overlay" id="recipe-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-recipe-title">Recipe Title</h3>
+                <button class="btn-close" onclick="closeModal('recipe-modal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="recipe-modal-stats">
+                    <div class="modal-stat"><span class="label">Prep Time:</span> <span class="val" id="modal-recipe-time">10 min</span></div>
+                    <div class="modal-stat"><span class="label">Cost:</span> <span class="val" id="modal-recipe-cost">$1.20</span></div>
+                    <div class="modal-stat"><span class="label">Calories:</span> <span class="val" id="modal-recipe-calories">450</span></div>
+                    <div class="modal-stat"><span class="label">Protein:</span> <span class="val" id="modal-recipe-protein">25g</span></div>
+                </div>
+                <hr class="modal-divider">
+                <div class="recipe-modal-content-grid">
+                    <div>
+                        <h4>Ingredients</h4>
+                        <ul class="recipe-ingredients-list" id="modal-recipe-ingredients">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Directions</h4>
+                        <ol class="recipe-steps-list" id="modal-recipe-steps">
+                            <!-- Populated dynamically -->
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exercise Detail Modal -->
+    <div class="modal-overlay" id="exercise-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-exercise-title">Exercise Title</h3>
+                <button class="btn-close" onclick="closeModal('exercise-modal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="exercise-modal-stats">
+                    <div class="modal-stat"><span class="label">Target Muscle:</span> <span class="val" id="modal-exercise-muscle">Chest</span></div>
+                    <div class="modal-stat"><span class="label">Equipment:</span> <span class="val" id="modal-exercise-equipment">None (Bodyweight)</span></div>
+                    <div class="modal-stat"><span class="label">Suggested Volume:</span> <span class="val" id="modal-exercise-volume">3 Sets x 12 Reps</span></div>
+                </div>
+                <hr class="modal-divider">
+                <h4>Movement Instructions</h4>
+                <ol class="recipe-steps-list" id="modal-exercise-instructions">
+                    <!-- Populated dynamically -->
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chatbot Floating Container -->
+    <div class="chatbot-wrapper">
+        <!-- Floating Chat Button -->
+        <button class="chatbot-fab" id="chatbot-toggle-btn" onclick="toggleChatbot()">
+            <svg class="chat-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px; height:24px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg class="chat-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px; height:24px; display:none;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+        
+        <!-- Chat Window -->
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">
+                <div class="chat-header-title">
+                    <div class="chat-coach-avatar">FC</div>
+                    <div class="chat-coach-details">
+                        <span class="coach-name">FitCoach AI</span>
+                        <span class="coach-status"><span class="status-dot"></span>Online</span>
+                    </div>
+                </div>
+                <button class="btn-close-chat" onclick="toggleChatbot()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px; height:18px;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="message message-coach">
+                    Hello! I'm FitCoach AI. How can I help you customize your workouts, tweak recipes to fit your budget, or answer wellness questions today?
+                </div>
+            </div>
+            
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbot-input" placeholder="Ask about exercises, recipes, budgets..." onkeypress="handleChatKeyPress(event)">
+                <button class="btn btn-primary btn-send-chat" onclick="sendChatMessage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px; margin:0;"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Portal Overlay -->
+    <div id="auth-portal" class="auth-overlay active" style="display:none;">
+        <!-- Card 1: Setup Wizard -->
+        <div class="auth-card" id="auth-setup-card" style="display: none;">
+            <div class="auth-header">
+                <h2>FitStudent <span class="accent-text">AI</span></h2>
+                <p>Cloud Integration Assistant</p>
+            </div>
+            <p class="auth-intro-text">This app utilizes Google Firebase to store your personalized AI workout plans, meal preps, and chatbot history securely in the cloud. Please paste your Firebase Web App configuration object (JSON) below to connect.</p>
+            <div class="input-group">
+                <label for="firebase-config-input">Firebase Config JSON Object</label>
+                <textarea id="firebase-config-input" rows="7" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "fitstudent.firebaseapp.com",&#10;  "projectId": "fitstudent",&#10;  "storageBucket": "fitstudent.appspot.com",&#10;  "messagingSenderId": "...",&#10;  "appId": "..."&#10;}' style="font-family:monospace; font-size:0.85rem; line-height:1.4;"></textarea>
+                <span class="input-help">Don't have a Firebase project? Click "Run in Local Demo Mode" to store data in your browser offline.</span>
+            </div>
+            <div class="auth-actions" style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+                <button class="btn btn-primary" onclick="connectFirebase()">Connect & Save Config</button>
+                <button class="btn btn-outline" onclick="runInLocalDemoMode()">Run in Local Demo Mode</button>
+            </div>
+        </div>
+
+        <!-- Card 2: Login & Registration -->
+        <div class="auth-card" id="auth-login-card" style="display: none;">
+            <div class="auth-header">
+                <h2>Welcome to FitStudent <span class="accent-text">AI</span></h2>
+                <p id="auth-card-subtitle" style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.25rem;">Sign in to sync your fitness planner to the cloud</p>
+            </div>
+            
+            <!-- Tab switches for login/register -->
+            <div class="auth-tab-switch" style="display:flex; border-bottom:1px solid var(--border-color); margin-bottom:1.5rem;">
+                <button class="auth-tab-btn active" id="btn-switch-login" onclick="switchAuthTab('login')" style="flex:1; padding:0.75rem; background:transparent; border:none; color:var(--text-secondary); font-weight:700; cursor:pointer; transition:all var(--transition-fast);">Log In</button>
+                <button class="auth-tab-btn" id="btn-switch-register" onclick="switchAuthTab('register')" style="flex:1; padding:0.75rem; background:transparent; border:none; color:var(--text-secondary); font-weight:700; cursor:pointer; transition:all var(--transition-fast);">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLoginSubmit(event)" style="display: flex; flex-direction: column; gap:1.25rem;">
+                <div class="input-group">
+                    <label for="login-email">Student Email</label>
+                    <input type="email" id="login-email" placeholder="alex@university.edu" required style="padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required style="padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                </div>
+                <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Log In</button>
+            </form>
+
+            <!-- Register Form (Hidden initially) -->
+            <form id="register-form" onsubmit="handleRegisterSubmit(event)" style="display: none; flex-direction: column; gap:1.25rem;">
+                <div class="input-group">
+                    <label for="register-name">Student Name</label>
+                    <input type="text" id="register-name" placeholder="Alex Jones" required style="padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                </div>
+                <div class="input-group">
+                    <label for="register-email">Student Email</label>
+                    <input type="email" id="register-email" placeholder="alex@university.edu" required style="padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                </div>
+                <div class="input-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Min 6 characters" required minlength="6" style="padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                </div>
+                <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Create Account</button>
+            </form>
+
+            <div class="auth-divider" style="text-align:center; position:relative; margin:1.5rem 0; font-size:0.8rem; color:var(--text-muted); font-weight:700;">
+                <span style="background:var(--bg-surface); padding:0 0.75rem; position:relative; z-index:2;">OR</span>
+                <div style="position:absolute; width:100%; height:1px; background:var(--border-color); top:50%; left:0; z-index:1;"></div>
+            </div>
+
+            <!-- Google Sign In -->
+            <button class="btn btn-secondary" onclick="handleGoogleSignIn()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                <svg viewBox="0 0 48 48" class="google-icon" style="width:18px; height:18px; display:block;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 3-2.23 5.54-4.75 7.24l7.36 5.7C43.7 36.9 46.5 31.11 46.5 24z"/><path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.36-5.7c-2.28 1.52-5.19 2.44-8.53 2.44-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                Continue with Google
+            </button>
+
+            <!-- Offline bypass inside login -->
+            <button class="btn btn-link" style="width:100%; margin-top:1rem;" onclick="runInLocalDemoMode()">
+                Skip & Use Local Offline Mode
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notification" id="app-toast">Plan saved successfully!</div>
+
+    <!-- Application Script -->
+    <script src="app.js?v=1.3"></script>
+</body>
+</html>
