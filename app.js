@@ -1915,6 +1915,31 @@ function formatChatMessageText(text) {
     return html;
 }
 
+function populateChatHistoryView() {
+    const messagePane = document.getElementById("chatbot-messages");
+    if (!messagePane) return;
+    
+    // Clear all messages except the first default welcome message
+    messagePane.innerHTML = `
+        <div class="message message-coach">
+            Hello! I'm FitCoach AI. How can I help you customize your workouts, tweak recipes to fit your budget, or answer wellness questions today?
+        </div>
+    `;
+    
+    // Render each message from history
+    state.chatHistory.forEach(msg => {
+        const sender = msg.role === "user" ? "user" : (msg.role === "model" ? "coach" : "error");
+        const content = msg.parts && msg.parts[0] ? msg.parts[0].text : "";
+        if (content) {
+            const formatted = formatChatMessageText(content);
+            appendChatMessageUI(formatted, sender);
+        }
+    });
+    
+    // Scroll to bottom
+    messagePane.scrollTop = messagePane.scrollHeight;
+}
+
 function sendChatMessage() {
     const inputField = document.getElementById("chatbot-input");
     const query = inputField.value.trim();
@@ -1923,6 +1948,32 @@ function sendChatMessage() {
     // Clear input
     inputField.value = "";
     
+    // Check if API Key is configured in settings
+    let apiKey = (state.userProfile && state.userProfile.apiKey) || "";
+    if (!apiKey) {
+        const settingsKeyInput = document.getElementById("api-key-input");
+        if (settingsKeyInput && settingsKeyInput.value.trim()) {
+            apiKey = settingsKeyInput.value.trim();
+            if (!state.userProfile) {
+                state.userProfile = {
+                    name: "Student Athlete",
+                    age: 20,
+                    gender: "Male",
+                    weight: 70,
+                    height: 175,
+                    goal: "Lose Weight (Cut)",
+                    equipment: "Bodyweight Only (Dorm Friendly)",
+                    frequency: 3,
+                    duration: "30 Minutes",
+                    diet: "Standard Western",
+                    budget: 1
+                };
+            }
+            state.userProfile.apiKey = apiKey;
+            saveStateToLocalStorage();
+        }
+    }
+    
     // Append user message to UI
     appendChatMessageUI(query, "user");
     
@@ -1930,11 +1981,6 @@ function sendChatMessage() {
     const messagePane = document.getElementById("chatbot-messages");
     messagePane.scrollTop = messagePane.scrollHeight;
     
-    // Save to history state
-    state.chatHistory.push({ role: "user", parts: [{ text: query }] });
-    
-    // Check if API Key is configured in settings
-    const apiKey = (state.userProfile && state.userProfile.apiKey) || "";
     if (!apiKey) {
         setTimeout(() => {
             const warningMsg = `FitCoach AI needs a Gemini API Key to answer your questions. Please configure one in the <a href="#" onclick="switchToTab('settings'); toggleChatbot(); return false;" style="color:var(--primary-color); font-weight:700; text-decoration:underline;">Settings</a> tab!`;
@@ -1943,6 +1989,10 @@ function sendChatMessage() {
         }, 500);
         return;
     }
+    
+    // Save to history state
+    state.chatHistory.push({ role: "user", parts: [{ text: query }] });
+    saveStateToLocalStorage();
     
     // Show typing indicator
     const typingIndicatorId = showChatTypingIndicator();
@@ -1986,6 +2036,7 @@ function sendChatMessage() {
         
         // Save reply to history
         state.chatHistory.push({ role: "model", parts: [{ text: reply }] });
+        saveStateToLocalStorage();
         
         // Append coach message to UI
         const formattedReply = formatChatMessageText(reply);
@@ -1995,6 +2046,10 @@ function sendChatMessage() {
     .catch(err => {
         console.error("Chatbot Gemini API call failed", err);
         removeChatTypingIndicator(typingIndicatorId);
+        
+        // Remove the failed user message from history so roles alternate in future calls!
+        state.chatHistory.pop();
+        saveStateToLocalStorage();
         
         const errorMsg = "Oops! I encountered an error. Please verify your Gemini API Key in the Settings page and check your connection.";
         appendChatMessageUI(errorMsg, "error");
@@ -2163,6 +2218,7 @@ function loadStateFromFirestore() {
 }
 
 function renderApplicationState() {
+    populateChatHistoryView();
     if (state.userProfile && state.activePlan) {
         document.getElementById("dashboard-empty-state").style.display = "none";
         document.getElementById("dashboard-content").style.display = "grid";
